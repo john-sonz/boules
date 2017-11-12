@@ -1,0 +1,1 @@
+# kulki na aplikacje
