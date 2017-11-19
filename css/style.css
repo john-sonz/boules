@@ -1,7 +1,9 @@
-#table{
+#table, table{
   border-collapse: collapse;
   border-spacing: 0;
-  margin: 20px auto;
+  margin: 20px 50px;
+  display: inline-block;
+
 
 }
 td{
