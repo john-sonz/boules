@@ -7,22 +7,31 @@
 
 }
 td{
-  padding: 5px;
   border: 1px solid black;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;  
   text-align: center;
   text-transform: uppercase;
   margin: 0;
 }
-.ball{    
+.ball, .preview_ball{
   height: 20px;
   width:  20px;
   border: 1px solid black;
   border-radius: 20px;
-  margin: auto;  
+  margin: auto;
+  display: inline-block;
+  vertical-align: middle;
 }
 .clicked{
-  height: 28px;
-  width:  28px;
+  height: 25px;
+  width:  25px;
+}
+#preview{
+  display: inline-block;
+  margin: 20px;
+  vertical-align: top;
+}
+i{
+  display: block;
 }

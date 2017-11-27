@@ -1,277 +1,288 @@
 const BOARD_SIZE = 9;
 const START_BALLS_AMOUNT = 3;
-const COLORS = ['#b7724a', '#b7724a', '#27cfac', '#4031fc', '#dc87f8', '#a45b67', '#bdd654'];
+const COLORS = ['#e4c726', '#eba78e', '#27cfac', '#4031fc', '#dc87f8', '#a45b67', '#bf0571'];
 let boardTab = [];
 let idsTab = [];
 let table = document.getElementById('table');
 let clicked = false;
 let anyGood;
 let balls = [];
+let nextColors = [Math.floor(Math.random() * 7),Math.floor(Math.random() * 7),Math.floor(Math.random() * 7)];
 
 class Ball {
-    constructor(color, posY, posX) {
-        this.color = color;
-        this.y = posY;
-        this.x = posX;
-    }
+  constructor(color, posY, posX) {
+    this.color = color;
+    this.y = posY;
+    this.x = posX;
+  }
 }
 
 function createTable() {
-    let table = document.createElement('table');
-    table.id = 'table';
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        let boardRow = [];
-        let idsRow = [];
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            boardRow.push(0);
-            idsRow.push([]);
-        }
-        boardTab.push(boardRow);
-        idsTab.push(idsRow);
-        let tr = document.createElement('tr');
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            let td = document.createElement('td');
-            td.id = i + '_' + j;
-            td.classList.add('free');
-            td.addEventListener('click', moveBall);
-            tr.appendChild(td);
-        }
-        table.appendChild(tr);
+  let table = document.createElement('table');
+  table.id = 'table';
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    let boardRow = [];
+    let idsRow = [];
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      boardRow.push(0);
+      idsRow.push([]);
     }
-    document.body.appendChild(table);
-    drawBalls();
+    boardTab.push(boardRow);
+    idsTab.push(idsRow);
+    let tr = document.createElement('tr');
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      let td = document.createElement('td');
+      td.id = i + '_' + j;
+      td.classList.add('free');
+      td.addEventListener('click', moveBall);
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+  document.body.appendChild(table);
+  drawBalls();
 
 }
 
 function createTable2() {
-    let table = document.createElement('table');
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        let tr = document.createElement('tr');
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            let td = document.createElement('td');
-            td.id = 'h' + '_' + i + '_' + j;
-            tr.appendChild(td);
-        }
-        table.appendChild(tr);
+  let table = document.createElement('table');
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    let tr = document.createElement('tr');
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      let td = document.createElement('td');
+      td.id = 'h' + '_' + i + '_' + j;
+      tr.appendChild(td);
     }
-    document.body.appendChild(table);
-    table = document.createElement('table');
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        let tr = document.createElement('tr');
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            let td = document.createElement('td');
-            td.id = 'a' + '_' + i + '_' + j;
-            tr.appendChild(td);
-        }
-        table.appendChild(tr);
+    table.appendChild(tr);
+  }
+  document.body.appendChild(table);
+  table = document.createElement('table');
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    let tr = document.createElement('tr');
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      let td = document.createElement('td');
+      td.id = 'a' + '_' + i + '_' + j;
+      tr.appendChild(td);
     }
-    document.body.appendChild(table);
+    table.appendChild(tr);
+  }
+  document.body.appendChild(table);
 }
 
 function updateTable2() {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            let td = document.getElementById('h' + '_' + i + '_' + j);
-            td.innerHTML = boardTab[i][j];
-            let td2 = document.getElementById('a' + '_' + i + '_' + j);
-            td2.innerHTML = idsTab[i][j];
-        }
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      let td = document.getElementById('h' + '_' + i + '_' + j);
+      td.innerHTML = boardTab[i][j];
+      let td2 = document.getElementById('a' + '_' + i + '_' + j);
+      td2.innerHTML = idsTab[i][j];
     }
+  }
 }
 
 function ballClickHandler() {
-    let tds = document.getElementsByClassName('free');
-    resetTabs();
-    clearRoad();
-    if (this.className.includes('clicked')) {
-        this.classList.remove('clicked');
-        clicked = false;
-        for (let i = 0; i < tds.length; i++) {
-            tds[i].removeEventListener('mouseover', previewRoad);
-        }
-    } else {
-        if (clicked) {
-            document.querySelector('.clicked').classList.remove('clicked');
-        } else {
-            clicked = true;
-            for (let i = 0; i < tds.length; i++) {
-                tds[i].addEventListener('mouseover', previewRoad);
-            }
-
-        }
-        this.classList.add('clicked');        
+  let tds = document.getElementsByClassName('free');
+  let id = this.parentNode.id.split('_');
+  let tdY = parseInt(id[0]);
+  let tdX = parseInt(id[1]);
+  resetTabs();
+  clearRoad();
+  firstStep(tdY, tdX);
+  if (this.className.includes('clicked')) {
+    this.classList.remove('clicked');
+    clicked = false;
+    for (let i = 0; i < tds.length; i++) {
+      tds[i].removeEventListener('mouseover', previewRoad);
     }
-    let id = this.parentNode.id.split('_');
-    console.log(id);
-    let tdY = parseInt(id[0]);
-    let tdX = parseInt(id[1]);
-    firstStep(tdY, tdX);
-    updateTable2();
-    console.log(clicked);
+  } else {
+    if (clicked) {
+      document.querySelector('.clicked').classList.remove('clicked');
+    } else {
+      clicked = true;
 
+      this.parentNode.addEventListener('mouseover', clearRoad);
+      for (let i = 0; i < tds.length; i++) {
+        let tdId = {
+          y: parseInt(tds[i].id.split('_')[0]),
+          x: parseInt(tds[i].id.split('_')[1])
+        };
+        if (boardTab[tdId.y][tdId.x] != 0) {
+          tds[i].addEventListener('mouseover', previewRoad);
+        }
+      }
+
+    }
+    this.classList.add('clicked');
+  }
+
+  updateTable2();
 }
 
 function resetTabs() {
-    for (let i = 0; i < BOARD_SIZE; i++) {
-        for (let j = 0; j < BOARD_SIZE; j++) {
-            idsTab[i][j] = [];
-            if (boardTab[i][j] != 'X') boardTab[i][j] = 0;
-        }
+  for (let i = 0; i < BOARD_SIZE; i++) {
+    for (let j = 0; j < BOARD_SIZE; j++) {
+      idsTab[i][j] = [];
+      if (boardTab[i][j] != 'X') boardTab[i][j] = 0;
     }
+  }
 }
 
 function drawBalls() {
-    let drawnYs = [];
-    let drawnXs = [];
-    let drawnCoords = [];
-    while (drawnCoords.length < START_BALLS_AMOUNT) {
-        let y = Math.floor(Math.random() * BOARD_SIZE);
-        let x = Math.floor(Math.random() * BOARD_SIZE);
-        if (drawnYs.indexOf(y) === -1 || drawnXs.indexOf(x) === -1) {
-            drawnCoords.push([y, x]);
-            drawnXs.push(x);
-            drawnYs.push(y);
-            let colorIndex = Math.floor(Math.random() * 7);
-            let ball = new Ball(COLORS[colorIndex], y, x);
-            balls.push(ball);
-            boardTab[y][x] = 'X';
-            let td = document.getElementById(y + '_' + x);
-            let ballDiv = document.createElement('div');
-            ballDiv.id = 'b_' + y + '_' + x;
-            ballDiv.className = "ball";
-            ballDiv.style.backgroundColor = COLORS[colorIndex];
-            ballDiv.addEventListener('click', ballClickHandler);
-            td.appendChild(ballDiv);
-            td.classList.remove('free');
-            td.removeEventListener('click', moveBall);
-        }
+  let drawnCoords = [];
+  while (drawnCoords.length < START_BALLS_AMOUNT) {
+    let y = Math.floor(Math.random() * BOARD_SIZE);
+    let x = Math.floor(Math.random() * BOARD_SIZE);
+    if (boardTab[y][x] != 'X') {
+      let colorIndex = nextColors[drawnCoords.length];
+      drawnCoords.push([y, x]);
+      let ball = new Ball(COLORS[colorIndex], y, x);
+      balls.push(ball);
+      boardTab[y][x] = 'X';
+      let td = document.getElementById(y + '_' + x);
+      let ballDiv = document.createElement('div');
+      ballDiv.id = 'b_' + y + '_' + x;
+      ballDiv.className = "ball";
+      ballDiv.style.backgroundColor = COLORS[colorIndex];
+      ballDiv.addEventListener('click', ballClickHandler);
+      td.appendChild(ballDiv);
+      td.classList.remove('free');
+      td.removeEventListener('click', moveBall);
     }
+  }
+  nextColors = [Math.floor(Math.random() * 7),Math.floor(Math.random() * 7),Math.floor(Math.random() * 7)];
+  updatePreview();
+}
+function updatePreview(){
+  let previewBalls = document.getElementsByClassName('preview_ball');
+  for(let i = 0; i < previewBalls.length; i++){
+    previewBalls[i].style.backgroundColor = COLORS[nextColors[i]];
+  }
 }
 
 function moveBall() {
-    if (clicked) {
-        let id = this.id.split('_');
-        let tdY = parseInt(id[0]);
-        let tdX = parseInt(id[1]);
-        let chosenBall = document.querySelector('.clicked');
-        let chosenBallId = chosenBall.id.split('_');
-        chosenBallId.shift();
-        startY = parseInt(chosenBallId[0]);
-        startX = parseInt(chosenBallId[1]);
-        firstStep(startY, startX);
-
-        console.log(idsTab[tdY][tdX]);
-        if (boardTab[tdY][tdY] != 0) {
-            clicked = false;
-            chosenBall.id = 'b' + '_' + tdY + '_' + tdX;
-            chosenBall.classList.remove('clicked');
-            let clonedBall = chosenBall.cloneNode();
-            clonedBall.addEventListener('click', ballClickHandler);
-            this.appendChild(clonedBall);
-            chosenBall.parentElement.addEventListener('click', moveBall);
-            chosenBall.parentElement.classList.add('free');
-            chosenBall.parentNode.removeChild(chosenBall);
-            boardTab[tdY][tdX] = 'X';
-            let tds = document.getElementsByClassName('free');
-            for (let i = 0; i < tds.length; i++) {
-                tds[i].removeEventListener('mouseover', previewRoad);
-            }
-            boardTab[startY][startX] = 0;
-            this.removeEventListener('click', moveBall);
-            this.classList.remove('free');
-            let ball = balls.find((el) => {
-                if (el.x == startX && el.y == startY) return true;
-                else return false;
-            });
-            ball.y = tdY;
-            ball.x = tdX;
-            idsTab[tdY][tdX].forEach((el) => {
-                document.getElementById(el).style.backgroundColor = 'gray';
-            });
-            this.style.backgroundColor = 'gray';
-            setTimeout(clearRoad, 500);
-        }
-        resetTabs();
-        console.log(clicked);
+  if (clicked) {
+    let id = this.id.split('_');
+    let tdY = parseInt(id[0]);
+    let tdX = parseInt(id[1]);
+    let chosenBall = document.querySelector('.clicked');
+    let chosenBallId = chosenBall.id.split('_');
+    chosenBallId.shift();
+    startY = parseInt(chosenBallId[0]);
+    startX = parseInt(chosenBallId[1]);
+    firstStep(startY, startX);
+    if (boardTab[tdY][tdY] != 0) {
+      clicked = false;
+      chosenBall.id = 'b' + '_' + tdY + '_' + tdX;
+      chosenBall.classList.remove('clicked');
+      let clonedBall = chosenBall.cloneNode();
+      clonedBall.addEventListener('click', ballClickHandler);
+      this.appendChild(clonedBall);
+      chosenBall.parentElement.addEventListener('click', moveBall);
+      chosenBall.parentElement.classList.add('free');
+      chosenBall.parentNode.removeChild(chosenBall);
+      boardTab[tdY][tdX] = 'X';
+      let tds = document.getElementsByClassName('free');
+      for (let i = 0; i < tds.length; i++) {
+        tds[i].removeEventListener('mouseover', previewRoad);
+      }
+      boardTab[startY][startX] = 0;
+      this.removeEventListener('click', moveBall);
+      this.classList.remove('free');
+      let ball = balls.find((el) => {
+        if (el.x == startX && el.y == startY) return true;
+        else return false;
+      });
+      ball.y = tdY;
+      ball.x = tdX;
+      idsTab[tdY][tdX].forEach((el) => {
+        document.getElementById(el).style.backgroundColor = 'gray';
+      });
+      this.style.backgroundColor = 'gray';
+      setTimeout( x => {clearRoad(), drawBalls()}, 500);
     }
+    resetTabs();
+  }
 }
 
 function checkRoad(y, x, start) {
-    let preTab = idsTab[y][x].slice();
-    preTab.push(y + '_' + x);
-    if (x - 1 >= 0) {
-        if (boardTab[y][x - 1] == 0) {
-            boardTab[y][x - 1] = start + 1;
-            anyGood = true;
-            idsTab[y][x - 1] = preTab;
-        }
+  let preTab = idsTab[y][x].slice();
+  preTab.push(y + '_' + x);
+  if (x - 1 >= 0) {
+    if (boardTab[y][x - 1] == 0) {
+      boardTab[y][x - 1] = start + 1;
+      anyGood = true;
+      idsTab[y][x - 1] = preTab;
     }
-    if (x + 1 < BOARD_SIZE) {
-        if (boardTab[y][x + 1] == 0) {
-            boardTab[y][x + 1] = start + 1;
-            anyGood = true;
-            idsTab[y][x + 1] = preTab;
-        }
+  }
+  if (x + 1 < BOARD_SIZE) {
+    if (boardTab[y][x + 1] == 0) {
+      boardTab[y][x + 1] = start + 1;
+      anyGood = true;
+      idsTab[y][x + 1] = preTab;
     }
-    if (y - 1 >= 0) {
-        if (boardTab[y - 1][x] == 0) {
-            boardTab[y - 1][x] = start + 1;
-            anyGood = true;
-            idsTab[y - 1][x] = preTab;
-        }
+  }
+  if (y - 1 >= 0) {
+    if (boardTab[y - 1][x] == 0) {
+      boardTab[y - 1][x] = start + 1;
+      anyGood = true;
+      idsTab[y - 1][x] = preTab;
     }
-    if (y + 1 < BOARD_SIZE) {
-        if (boardTab[y + 1][x] == 0) {
-            boardTab[y + 1][x] = start + 1;
-            anyGood = true;
-            idsTab[y + 1][x] = preTab;
-        }
+  }
+  if (y + 1 < BOARD_SIZE) {
+    if (boardTab[y + 1][x] == 0) {
+      boardTab[y + 1][x] = start + 1;
+      anyGood = true;
+      idsTab[y + 1][x] = preTab;
     }
+  }
 
 }
 
 function firstStep(y, x) {
-    checkRoad(y, x, 0);
-    nextStep(1);
+  checkRoad(y, x, 0);
+  nextStep(1);
 }
 
 function nextStep(start) {
-    anyGood = false;
-    for (let i = 0; i < boardTab.length; i++) {
-        for (let j = 0; j < boardTab[i].length; j++) {
-            if (boardTab[i][j] == start) {
-                checkRoad(i, j, start);
-            }
-        }
+  anyGood = false;
+  for (let i = 0; i < boardTab.length; i++) {
+    for (let j = 0; j < boardTab[i].length; j++) {
+      if (boardTab[i][j] == start) {
+        checkRoad(i, j, start);
+      }
     }
-    if (anyGood) {
-        nextStep(start + 1);
-    }
-    updateTable2();
+  }
+  if (anyGood) {
+    nextStep(start + 1);
+  }
+  updateTable2();
 }
 
 function clearRoad() {
-    let tds = document.getElementsByTagName('td');
-    for (let i = 0; i < tds.length; i++) {
-        tds[i].style.backgroundColor = 'white';
-    }
+  let tds = document.getElementsByTagName('td');
+  for (let i = 0; i < tds.length; i++) {
+    tds[i].style.backgroundColor = 'white';
+  }
 }
 
 function previewRoad() {
-    clearRoad();
-    let id = this.id.split('_');
-    let tdY = parseInt(id[0]);
-    let tdX = parseInt(id[1]);
+  clearRoad();
+  let id = this.id.split('_');
+  let tdY = parseInt(id[0]);
+  let tdX = parseInt(id[1]);
+  if (boardTab[tdY][tdX] !== 0) {
     idsTab[tdY][tdX].forEach((el) => {
-        document.getElementById(el).style.backgroundColor = 'pink';
+      document.getElementById(el).style.backgroundColor = 'pink';
     });
-    this.style.backgroundColor = 'pink';
+  }
+  this.style.backgroundColor = 'pink';
 }
 
 function init() {
-    createTable();
-    createTable2();
-    updateTable2();
+
+  createTable();
+  createTable2();
+  updateTable2();
 }
 
 document.addEventListener('DOMContentLoaded', init);
