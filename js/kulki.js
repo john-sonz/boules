@@ -1,19 +1,22 @@
 const BOARD_SIZE = 9;
 const START_BALLS_AMOUNT = 3;
 const COLORS = ['#e4c726', '#eba78e', '#27cfac', '#4031fc', '#dc87f8', '#a45b67', '#bf0571'];
+const DESTROY_AMOUNT = 3;
 let boardTab = [];
 let idsTab = [];
 let table = document.getElementById('table');
 let clicked = false;
 let anyGood;
 let balls = [];
-let nextColors = [Math.floor(Math.random() * 7),Math.floor(Math.random() * 7),Math.floor(Math.random() * 7)];
+let toDelete = [];
+let nextColors = [Math.floor(Math.random() * 7), Math.floor(Math.random() * 7), Math.floor(Math.random() * 7)];
 
 class Ball {
   constructor(color, posY, posX) {
     this.color = color;
     this.y = posY;
     this.x = posX;
+    this.toDelete = false;
   }
 }
 
@@ -149,12 +152,13 @@ function drawBalls() {
       td.removeEventListener('click', moveBall);
     }
   }
-  nextColors = [Math.floor(Math.random() * 7),Math.floor(Math.random() * 7),Math.floor(Math.random() * 7)];
+  nextColors = [Math.floor(Math.random() * 7), Math.floor(Math.random() * 7), Math.floor(Math.random() * 7)];
   updatePreview();
 }
-function updatePreview(){
+
+function updatePreview() {
   let previewBalls = document.getElementsByClassName('preview_ball');
-  for(let i = 0; i < previewBalls.length; i++){
+  for (let i = 0; i < previewBalls.length; i++) {
     previewBalls[i].style.backgroundColor = COLORS[nextColors[i]];
   }
 }
@@ -198,7 +202,11 @@ function moveBall() {
         document.getElementById(el).style.backgroundColor = 'gray';
       });
       this.style.backgroundColor = 'gray';
-      setTimeout( x => {clearRoad(), drawBalls()}, 500);
+      checkBalls();
+      setTimeout(x => {
+        clearRoad();
+        drawBalls();
+      }, 500);
     }
     resetTabs();
   }
@@ -278,7 +286,103 @@ function previewRoad() {
   this.style.backgroundColor = 'pink';
 }
 
+function checkBalls() {
+
+  COLORS.forEach(color => {
+    let colorBalls = balls.filter(ball => {
+      return ball.color == color;
+    });
+    let board, boardRow;
+    board = [];
+    for (let i = 0; i < BOARD_SIZE; i++) {
+      boardRow = [];
+      for (let j = 0; j < BOARD_SIZE; j++) {
+        boardRow.push(false);
+      }
+      board.push(boardRow);
+    }
+    for (let i = 0; i < colorBalls.length; i++) {
+      board[colorBalls[i].y][colorBalls[i].x] = true;
+    }
+    for (let i = 0; i < colorBalls.length; i++) {
+      checkSurroundings(board, colorBalls[i].y, colorBalls[i].x, colorBalls);
+    }
+
+  });
+  deleteBalls();
+}
+
+function checkSurroundings(tab, yPos, xPos, cb) {
+  toDelete = [];
+  for (let y = (yPos > 0 ? -1 : 0); y < (yPos + 1 < BOARD_SIZE ? 2 : 1); y++) {
+    for (let x = (xPos > 0 ? -1 : 0); x < (xPos + 1 < BOARD_SIZE ? 2 : 1); x++) {
+      if (x != 0 || y != 0) {
+        if (tab[yPos + y][xPos + x]) {
+          toDelete.push({
+            y: yPos + y,
+            x: xPos + x
+          });
+          checkInDirection(tab, yPos + y, xPos + x, {
+            y: y,
+            x: x
+          }, 1,cb);
+        }
+      }
+    }
+  }
+}
+
+function checkInDirection(tab, y, x, direction, counter, cb) {  
+  let yGood = y + direction.y >= 0 && y + direction.y < BOARD_SIZE;
+  let xGood = x + direction.x >= 0 && x + direction.x < BOARD_SIZE;
+  if (yGood && xGood) {
+    if (tab[y + direction.y][x + direction.x]) {
+      toDelete.push({
+        y: y + direction.y,
+        x: x + direction.x
+      });
+      checkInDirection(tab, y + direction.y, x + direction.x, direction, counter + 1, cb);
+    } else if (counter + 1 >= DESTROY_AMOUNT) {
+      toDelete.forEach(pos => {
+        let b = cb.find(ball => {          
+          return (ball.y == pos.y && ball.x == pos.x);
+        });        
+        b.toDelete = true;
+      });
+    }
+  }
+}
+function deleteBalls() {
+  let points = 0;
+  for (let i = 0; i < balls.length; i++) {    
+    if (balls[i].toDelete) {
+      let id = balls[i].y + '_' + balls[i].x;      
+      let td = document.getElementById(id);
+      td.innerHTML = '';
+      td.classList.add('free');
+      td.addEventListener('click', moveBall);
+      boardTab[balls[i].y][balls[i].x] = 0;
+      balls.splice(i, 1);
+      points++;
+      i--;
+    }
+  }
+  let score = document.getElementById('score');
+  score.innerHTML = parseInt(score.innerHTML) + points;
+}
+
 function init() {
+  let preview = document.createElement('div');
+  preview.innerHTML = '<i>Następne:</i>';
+  for (let i = 0; i < 3; i++) {
+    let previewBall = document.createElement('div');
+    previewBall.classList.add('preview_ball');
+    preview.appendChild(previewBall);
+  }
+  let score = document.createElement('div');
+  score.innerHTML = 'Wynik: <span id="score">0</span>';
+  preview.appendChild(score);
+  document.body.appendChild(preview);
 
   createTable();
   createTable2();
