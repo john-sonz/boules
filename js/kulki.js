@@ -1,7 +1,7 @@
 const BOARD_SIZE = 9;
 const START_BALLS_AMOUNT = 3;
 const COLORS = ['#e4c726', '#eba78e', '#27cfac', '#4031fc', '#dc87f8', '#a45b67', '#bf0571'];
-const DESTROY_AMOUNT = 3;
+const DESTROY_AMOUNT = 5;
 let boardTab = [];
 let idsTab = [];
 let table = document.getElementById('table');
@@ -9,7 +9,8 @@ let clicked = false;
 let anyGood;
 let balls = [];
 let toDelete = [];
-let nextColors = [Math.floor(Math.random() * 7), Math.floor(Math.random() * 7), Math.floor(Math.random() * 7)];
+let anyDeleted = false;
+let nextColors = [Math.floor(Math.random() * COLORS.length), Math.floor(Math.random() * COLORS.length), Math.floor(Math.random() * COLORS.length)];
 
 class Ball {
   constructor(color, posY, posX) {
@@ -47,7 +48,7 @@ function createTable() {
 
 }
 
-function createTable2() {
+/*function createTable2() {
   let table = document.createElement('table');
   for (let i = 0; i < BOARD_SIZE; i++) {
     let tr = document.createElement('tr');
@@ -70,9 +71,9 @@ function createTable2() {
     table.appendChild(tr);
   }
   document.body.appendChild(table);
-}
+}*/
 
-function updateTable2() {
+/*function updateTable2() {
   for (let i = 0; i < BOARD_SIZE; i++) {
     for (let j = 0; j < BOARD_SIZE; j++) {
       let td = document.getElementById('h' + '_' + i + '_' + j);
@@ -81,10 +82,10 @@ function updateTable2() {
       td2.innerHTML = idsTab[i][j];
     }
   }
-}
+}*/
 
 function ballClickHandler() {
-  let tds = document.getElementsByClassName('free');
+  let tds = document.getElementsByTagName('td');
   let id = this.parentNode.id.split('_');
   let tdY = parseInt(id[0]);
   let tdX = parseInt(id[1]);
@@ -103,22 +104,23 @@ function ballClickHandler() {
     } else {
       clicked = true;
 
-      this.parentNode.addEventListener('mouseover', clearRoad);
+      this.parentNode.addEventListener('mouseover', clearRoad);      
       for (let i = 0; i < tds.length; i++) {
         let tdId = {
           y: parseInt(tds[i].id.split('_')[0]),
           x: parseInt(tds[i].id.split('_')[1])
-        };
+        };        
         if (boardTab[tdId.y][tdId.x] != 0) {
           tds[i].addEventListener('mouseover', previewRoad);
         }
+        else tds[i].addEventListener('mouseover', clearRoad);
       }
 
     }
     this.classList.add('clicked');
   }
 
-  updateTable2();
+  //updateTable2();
 }
 
 function resetTabs() {
@@ -152,7 +154,7 @@ function drawBalls() {
       td.removeEventListener('click', moveBall);
     }
   }
-  nextColors = [Math.floor(Math.random() * 7), Math.floor(Math.random() * 7), Math.floor(Math.random() * 7)];
+  nextColors = [Math.floor(Math.random() * COLORS.length), Math.floor(Math.random() * COLORS.length), Math.floor(Math.random() * COLORS.length)];
   updatePreview();
 }
 
@@ -174,7 +176,7 @@ function moveBall() {
     startY = parseInt(chosenBallId[0]);
     startX = parseInt(chosenBallId[1]);
     firstStep(startY, startX);
-    if (boardTab[tdY][tdY] != 0) {
+    if (boardTab[tdY][tdX] != 0) {
       clicked = false;
       chosenBall.id = 'b' + '_' + tdY + '_' + tdX;
       chosenBall.classList.remove('clicked');
@@ -185,7 +187,7 @@ function moveBall() {
       chosenBall.parentElement.classList.add('free');
       chosenBall.parentNode.removeChild(chosenBall);
       boardTab[tdY][tdX] = 'X';
-      let tds = document.getElementsByClassName('free');
+      let tds = document.getElementsByTagName('td');
       for (let i = 0; i < tds.length; i++) {
         tds[i].removeEventListener('mouseover', previewRoad);
       }
@@ -202,13 +204,17 @@ function moveBall() {
         document.getElementById(el).style.backgroundColor = 'gray';
       });
       this.style.backgroundColor = 'gray';
-      checkBalls();
+
       setTimeout(x => {
         clearRoad();
-        drawBalls();
+        checkBalls();
+        if (!anyDeleted) {
+          drawBalls();
+          toDelete = [];
+        }
+        anyDeleted = false;
       }, 500);
     }
-    resetTabs();
   }
 }
 
@@ -263,7 +269,7 @@ function nextStep(start) {
   if (anyGood) {
     nextStep(start + 1);
   }
-  updateTable2();
+  //updateTable2();
 }
 
 function clearRoad() {
@@ -278,12 +284,15 @@ function previewRoad() {
   let id = this.id.split('_');
   let tdY = parseInt(id[0]);
   let tdX = parseInt(id[1]);
-  if (boardTab[tdY][tdX] !== 0) {
+  if (boardTab[tdY][tdX] !== 0  && boardTab[tdY][tdX] != 'X') {
+    this.style.backgroundColor = 'pink';
     idsTab[tdY][tdX].forEach((el) => {
       document.getElementById(el).style.backgroundColor = 'pink';
     });
+  } else {
+    clearRoad();
   }
-  this.style.backgroundColor = 'pink';
+  
 }
 
 function checkBalls() {
@@ -307,7 +316,6 @@ function checkBalls() {
     for (let i = 0; i < colorBalls.length; i++) {
       checkSurroundings(board, colorBalls[i].y, colorBalls[i].x, colorBalls);
     }
-
   });
   deleteBalls();
 }
@@ -322,17 +330,26 @@ function checkSurroundings(tab, yPos, xPos, cb) {
             y: yPos + y,
             x: xPos + x
           });
+          toDelete.push({
+            y: yPos,
+            x: xPos
+          });
           checkInDirection(tab, yPos + y, xPos + x, {
             y: y,
             x: x
-          }, 1,cb);
+          }, 1, cb);
         }
       }
     }
   }
 }
 
-function checkInDirection(tab, y, x, direction, counter, cb) {  
+function checkInDirection(tab, y, x, direction, counter, cb) {
+  console.log(direction, 'direction');
+  toDelete.forEach(pos => {
+    console.log(pos, 'pos');
+  });
+
   let yGood = y + direction.y >= 0 && y + direction.y < BOARD_SIZE;
   let xGood = x + direction.x >= 0 && x + direction.x < BOARD_SIZE;
   if (yGood && xGood) {
@@ -342,21 +359,26 @@ function checkInDirection(tab, y, x, direction, counter, cb) {
         x: x + direction.x
       });
       checkInDirection(tab, y + direction.y, x + direction.x, direction, counter + 1, cb);
-    } else if (counter + 1 >= DESTROY_AMOUNT) {
-      toDelete.forEach(pos => {
-        let b = cb.find(ball => {          
-          return (ball.y == pos.y && ball.x == pos.x);
-        });        
-        b.toDelete = true;
-      });
+    } else {      
+      if (counter + 1 >= DESTROY_AMOUNT) {
+        toDelete.forEach(pos => {
+          console.log(pos, 'del');
+          let b = cb.find(ball => {
+            return (ball.y == pos.y && ball.x == pos.x);
+          });
+          b.toDelete = true;
+        });
+      }
+      toDelete = [];
     }
   }
 }
+
 function deleteBalls() {
   let points = 0;
-  for (let i = 0; i < balls.length; i++) {    
+  for (let i = 0; i < balls.length; i++) {
     if (balls[i].toDelete) {
-      let id = balls[i].y + '_' + balls[i].x;      
+      let id = balls[i].y + '_' + balls[i].x;
       let td = document.getElementById(id);
       td.innerHTML = '';
       td.classList.add('free');
@@ -367,6 +389,9 @@ function deleteBalls() {
       i--;
     }
   }
+  if (points != 0) anyDeleted = true;
+
+
   let score = document.getElementById('score');
   score.innerHTML = parseInt(score.innerHTML) + points;
 }
@@ -385,8 +410,8 @@ function init() {
   document.body.appendChild(preview);
 
   createTable();
-  createTable2();
-  updateTable2();
+//createTable2();
+//updateTable2();
 }
 
 document.addEventListener('DOMContentLoaded', init);

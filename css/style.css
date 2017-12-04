@@ -1,40 +1,48 @@
-#table, table{
-  border-collapse: collapse;
-  border-spacing: 0;
+body {
+  background: lightskyblue;
+}
+
+#table,
+table {
   margin: 20px 50px;
   display: inline-block;
-
-
 }
-td{
-  border: 1px solid black;
-  width: 40px;
-  height: 40px;  
+
+td {
+  width: 65px;
+  height: 65px;
+  border-radius: 15px;
+  background: white;
   text-align: center;
   text-transform: uppercase;
-  margin: 0;
 }
-.ball, .preview_ball{
-  height: 20px;
-  width:  20px;
-  border: 1px solid black;
-  border-radius: 20px;
+
+.ball,
+.preview_ball {
+  height: 45px;
+  width: 45px;
+  border-radius: 45px;
   margin: auto;
   display: inline-block;
   vertical-align: middle;
 }
-.preview_ball{
+
+.preview_ball {
   margin: 10px;
 }
-.clicked{
-  height: 25px;
-  width:  25px;
+
+.clicked {
+  height: 55px;
+  width: 55px;
+  border-radius: 55px;
 }
-#preview{
+
+#preview {
   display: inline-block;
   margin: 20px;
   vertical-align: top;
 }
-i{
+
+i {
   display: block;
 }
