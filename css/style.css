@@ -4,13 +4,12 @@ body {
 
 #table,
 table {
-  margin: 20px 50px;
-  display: inline-block;
+  margin: 0 auto;
 }
 
 td {
-  width: 65px;
-  height: 65px;
+  width: 60px;
+  height: 60px;
   border-radius: 15px;
   background: white;
   text-align: center;
@@ -21,6 +20,8 @@ td {
 .preview_ball {
   height: 45px;
   width: 45px;
+  min-height: 45px;
+  min-width: 45px;
   border-radius: 45px;
   margin: auto;
   display: inline-block;
@@ -38,11 +39,29 @@ td {
 }
 
 #preview {
-  display: inline-block;
-  margin: 20px;
-  vertical-align: top;
+  display: flex;
+  justify-content: center;
+  margin: 1.5em auto;
+  width: 200px;
+  border: 3px groove yellow;
 }
 
-i {
+#score-div {
+  border: 3px dashed orange;
   display: block;
+  margin: auto;
+  width: 250px;
+  text-align: center;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  padding: 0.5em;
+  font-size: 1.5em;
+  margin-top: 1.5em;
+}
+
+#end-div {
+  text-align: center;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  padding: 0.5em;
+  font-size: 1.5em;
+  margin-top: 1.5em;
 }
