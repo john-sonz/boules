@@ -192,7 +192,7 @@ function moveBall() {
             let endInfo = document.createElement('div');
             endInfo.id = 'end-div';
             let score = document.getElementById('score').innerText;
-            let endText = document.createTextNode('Koniec gry! Twoj wynik to: ' + score + ' punktów');
+            let endText = document.createTextNode('Game Over! Your score is: ' + score + ' points');
             endInfo.appendChild(endText);
             console.log(endInfo);
             document.body.insertBefore(endInfo, document.getElementById('score-div'));
